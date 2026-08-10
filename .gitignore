@@ -1,0 +1,22 @@
+# Maxfiy ma'lumotlar - GitHub'ga yuklanmaydi!
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Ma'lumotlar fayllari (serverda alohida yaratiladi)
+groups.json
+admins.json
+stats.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

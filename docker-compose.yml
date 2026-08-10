@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  taxi-bot:
+    build: .
+    container_name: taxi_bot
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      # JSON fayllar o'zgarsa, konteyner ichida ham saqlansin
+      - ./groups.json:/app/groups.json
+      - ./admins.json:/app/admins.json
+      - ./stats.json:/app/stats.json
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
