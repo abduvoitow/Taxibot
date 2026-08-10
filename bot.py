@@ -649,10 +649,12 @@ async def main():
     logging.info("Bot ishga tushdi...")
     # Render va UptimeRobot uchun HTTP serverni yoqamiz
     await start_web_server()
-    try:
-        await dp.start_polling(bot)
-    finally:
-        await bot.session.close()
+    while True:
+        try:
+            await dp.start_polling(bot, handle_signals=False)
+        except Exception as e:
+            logging.error(f"⚠️ Telegram ulanishda xatolik ({e}). 5 soniyadan keyin qayta ulanmoqda...")
+            await asyncio.sleep(5)
 
 
 if __name__ == "__main__":
