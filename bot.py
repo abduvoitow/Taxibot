@@ -625,8 +625,30 @@ async def send_order(message: types.Message, ai_data: dict, display_text: str):
                 pass
 
 
+from aiohttp import web
+
+async def handle_ping(request):
+    return web.Response(text="🚕 Taxi Bot Active & Running 24/7!", content_type="text/html")
+
+async def start_web_server():
+    """Render.com va UptimeRobot uchun HTTP server (15-minutlik uyquni oldini olish uchun)"""
+    try:
+        app = web.Application()
+        app.router.add_get("/", handle_ping)
+        app.router.add_get("/health", handle_ping)
+        port = int(os.getenv("PORT", 8080))
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", port)
+        await site.start()
+        logging.info(f"🌐 HTTP Ping-server {port}-portda ishga tushdi!")
+    except Exception as e:
+        logging.error(f"HTTP serverni ishga tushirishda xatolik: {e}")
+
 async def main():
     logging.info("Bot ishga tushdi...")
+    # Render va UptimeRobot uchun HTTP serverni yoqamiz
+    await start_web_server()
     try:
         await dp.start_polling(bot)
     finally:
@@ -638,3 +660,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):
         logging.info("Bot to'xtatildi!")
+
