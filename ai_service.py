@@ -460,14 +460,16 @@ def is_taxi_order_ai(text: str) -> dict:
     Xabar: {text}
     """
     
-    attempts = len(ai_clients)
-    for attempt in range(attempts):
+    models_to_try = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-lite']
+    attempts = len(ai_clients) * len(models_to_try)
+    
+    for model_name in models_to_try:
         client = get_current_client()
         if not client:
             break
         try:
             response = client.models.generate_content(
-                model='gemini-2.0-flash-lite',
+                model=model_name,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
@@ -489,7 +491,6 @@ def is_taxi_order_ai(text: str) -> dict:
             )
             data = json.loads(response.text)
             
-            # AI ma'lumot qaytarsa, route_key ni ulab qo'yamiz
             if data.get("is_taxi"):
                 from_l = data.get("from_location", "").lower()
                 to_l = data.get("to_location", "").lower()
@@ -500,7 +501,7 @@ def is_taxi_order_ai(text: str) -> dict:
             
             return data
         except Exception as e:
-            logging.warning(f"AI Call Xatolik (Key #{_current_client_index + 1}): {e}. Zaxira API keyga o'tilmoqda...")
+            logging.warning(f"AI Call Xatolik (Model: {model_name}, Key #{_current_client_index + 1}): {e}. Zaxira key/modelga o'tilmoqda...")
             rotate_client()
 
     return {"is_taxi": False}
