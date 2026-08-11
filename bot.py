@@ -153,6 +153,16 @@ class AdminStates(StatesGroup):
     waiting_for_admin_id = State()
     waiting_for_group_input = State()
 
+# Bot egalari Telegram ID lari — hech qachon o'zgarmaydigan asosiy adminlar
+OWNER_IDS = {8584853437}
+
+def is_admin(user_id: int) -> bool:
+    """Foydalanuvchi admin yoki bot egasi ekanligini tekshiradi."""
+    if user_id in OWNER_IDS:
+        return True
+    admins = load_admins()
+    return str(user_id) in admins
+
 admin_menu = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="👥 Guruhlar"), KeyboardButton(text="👮 Adminlar")],
@@ -166,6 +176,9 @@ admin_menu = ReplyKeyboardMarkup(
 @dp.message(CommandStart())
 async def cmd_start(message: types.Message):
     if message.chat.type == "private":
+        if not is_admin(message.from_user.id):
+            await message.answer("🚫 Sizda bu botdan foydalanish uchun ruxsat yo'q.")
+            return
         await message.answer(
             "🚕 <b>Taksi Bot - Admin Panel</b>\n\n"
             "👋 Xush kelibsiz! Men taksi buyurtmalarini avtomatik saralovchi botman.\n\n"
@@ -181,6 +194,9 @@ async def cmd_start(message: types.Message):
 
 @dp.message(F.text == "👥 Guruhlar", F.chat.type == "private")
 async def show_groups(message: types.Message):
+    if not is_admin(message.from_user.id):
+        await message.answer("🚫 Sizda bu amalni bajarish uchun ruxsat yo'q.")
+        return
     groups = load_groups()
     if not groups:
         await message.answer("Bot hozircha hech qanday guruhda xabar o'qimagan yoki qo'shilmagan.")
@@ -211,6 +227,9 @@ async def show_groups(message: types.Message):
 
 @dp.message(F.text == "👮 Adminlar", F.chat.type == "private")
 async def show_admins(message: types.Message):
+    if not is_admin(message.from_user.id):
+        await message.answer("🚫 Sizda bu amalni bajarish uchun ruxsat yo'q.")
+        return
     admins = load_admins()
     if not admins:
         await message.answer("Adminlar ro'yxati bo'sh.")
@@ -227,6 +246,9 @@ async def show_admins(message: types.Message):
 
 @dp.message(F.text == "➕ Admin qo'shish", F.chat.type == "private")
 async def add_admin_start(message: types.Message, state: FSMContext):
+    if not is_admin(message.from_user.id):
+        await message.answer("🚫 Sizda bu amalni bajarish uchun ruxsat yo'q.")
+        return
     await message.answer("Yangi adminning Telegram ID raqamini yuboring:")
     await state.set_state(AdminStates.waiting_for_admin_id)
 
@@ -269,6 +291,9 @@ async def add_admin_finish(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == "➕ Guruh qo'shish", F.chat.type == "private")
 async def add_group_start(message: types.Message):
+    if not is_admin(message.from_user.id):
+        await message.answer("🚫 Sizda bu amalni bajarish uchun ruxsat yo'q.")
+        return
     await message.answer(
         "➕ <b>Yangi guruh qo'shish</b>\n\n"
         "Guruhga bot qo'shish uchun:\n\n"
@@ -326,6 +351,9 @@ async def add_group_finish(message: types.Message, state: FSMContext):
 
 @dp.message(F.text == "❌ Guruhni o'chirish", F.chat.type == "private")
 async def delete_groups_menu(message: types.Message):
+    if not is_admin(message.from_user.id):
+        await message.answer("🚫 Sizda bu amalni bajarish uchun ruxsat yo'q.")
+        return
     groups = load_groups()
     if not groups:
         await message.answer("O'chirish uchun guruhlar yo'q.")
@@ -390,6 +418,9 @@ async def dummy_callback(call: types.CallbackQuery):
 
 @dp.message(F.text == "❌ Adminni o'chirish", F.chat.type == "private")
 async def delete_admins_menu(message: types.Message):
+    if not is_admin(message.from_user.id):
+        await message.answer("🚫 Sizda bu amalni bajarish uchun ruxsat yo'q.")
+        return
     admins = load_admins()
     if not admins:
         await message.answer("O'chirish uchun adminlar yo'q.")
@@ -433,6 +464,9 @@ async def delete_admin_callback(call: types.CallbackQuery):
 
 @dp.message(F.text == "📊 Statistika", F.chat.type == "private")
 async def show_stats(message: types.Message):
+    if not is_admin(message.from_user.id):
+        await message.answer("🚫 Sizda bu amalni bajarish uchun ruxsat yo'q.")
+        return
     stats = load_stats()
     if not stats:
         await message.answer("Hali hech qanday buyurtma qayd etilmagan.")
